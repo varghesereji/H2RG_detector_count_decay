@@ -1,0 +1,15 @@
+#This script is to compare the slopes of lobes of dataset on 19/6 using spline fit
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
+from scipy.interpolate import UnivariateSpline
+
+color_list = ['k','b','g','r']
+
+
+for q in range(4):
+    dc_0G = np.load('/home/varghese/Desktop/DS5_DP1/Dataset/Avg_0G/AvgDataCube_0G_{}.npy'.format(q))
+    dc_1G = np.load('/home/varghese/Desktop/DS5_DP1/Dataset/Avg_1G/AvgDataCube_1G_{}.npy'.format(q))
+    dc_2G = np.load('/home/varghese/Desktop/DS5_DP1/Dataset/Avg_2G/AvgDataCube_2G_{}.npy'.format(q))

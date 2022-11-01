@@ -1,0 +1,41 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+
+def find_c_t(c_0, rate, dt):
+    '''
+    c_0 : the initial value
+    rate : Rate of increase in count per unit time
+    dt : infititesimal time.
+    '''
+    c_t = c_0+rate*dt
+    return c_t
+
+def generate_up_the_ramp(c_0, rate, t_max, dt):
+    '''
+    c_0 : Initial value
+    t_max : Maximum time to continue this process
+    rate : Rate of increase in count per unit time
+    dt : infititesimal time.
+    '''
+    up_the_ramp_values = [c_0]
+    t = 0
+    while t<t_max:
+        c_t = find_c_t(c_0,  rate, dt)
+        up_the_ramp_values.append(c_t)
+        c_0=c_t
+        t=t+dt
+    return up_the_ramp_values
+
+
+c_0 = 0
+rate = 3000
+dt = 1
+t_max = 10
+
+up_the_ramp = generate_up_the_ramp(c_0,  rate,  t_max,  dt)
+
+plt.figure()
+plt.plot(up_the_ramp,'o-')
+plt.show(block=False)

@@ -1,0 +1,30 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+color_list = ['black','blue','green','red','dimgray','deepskyblue','lightgreen','lightcoral']
+
+for lamb in range(10000000,110000000,10000000):
+    
+
+    plt.figure(figsize=(16,9))
+    for channel in range(0,4,1):
+
+        avs = np.load('/home/varghese/Desktop/Parallel_computing/a_values/avs_{0}_{1}.npy'.format(channel,lamb))
+        bvs = np.load('/home/varghese/Desktop/Parallel_computing/b_values/bvs_{0}_{1}.npy'.format(channel,lamb))
+        #coun = np.load('/home/varghese/Desktop/Least_sq/a_values/avs_{0}_{1}.npy'.format(channel,lamb))
+        er_a = np.load('/home/varghese/Desktop/Parallel_computing/era_values/eravs_{0}_{1}.npy'.format(channel,lamb))
+        er_b = np.load('/home/varghese/Desktop/Parallel_computing/erb_values/erbvs_{0}_{1}.npy'.format(channel,lamb))
+
+        plt.errorbar(avs,bvs,xerr=er_a,yerr=er_b,fmt='.',color=color_list[channel],ecolor=color_list[4+channel],elinewidth=1,capsize=10,label='Channel {}'.format(channel+1))
+        print('lamba = {0} channel = {1} done'.format(lamb,channel))
+    plt.xlabel('a(%)')
+    plt.ylabel('b(per readouts)')
+    plt.title('Correlation btw a and b: $\lambda$={0}'.format(lamb))
+
+
+    plt.savefig('/home/varghese/Desktop/Parallel_computing/Correlation_plots/Plot_lambda_{0}.png'.format(lamb))
+
+    
+        
+
+    
