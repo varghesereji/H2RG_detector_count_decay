@@ -1,0 +1,4 @@
+#+ TITLE: Compare count change in different rate and count
+* TODO Import [[file:decay_simulations.py][decay_simulations]]
+* TODO Create array of different count rates and different t_max
+* TODO call generate_up_the_ramp_decay_added
