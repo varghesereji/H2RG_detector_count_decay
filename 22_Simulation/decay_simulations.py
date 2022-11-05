@@ -26,7 +26,7 @@ def find_c_t(c_0, rate, dt):
     c_t = c_0 + rate*dt
     return c_t
 
-def generate_up_the_ramp(c_0, rate, t_max, dt):
+def generate_up_the_ramp(c_0=0, rate=3000, t_max=10, dt=1):
     '''
     c_0 : Initial value
     t_max : Maximum time to continue this process
