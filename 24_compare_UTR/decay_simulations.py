@@ -9,6 +9,21 @@ def interpolating_p(updated_count,channel):
     updated_p = interp_p(updated_count)
     return updated_p
 
+def count_limit(count_array):
+    '''
+    Parameters
+    -------------------------------
+    count_array: Array of count in each instant of time
+
+    Returns
+    -------------------------------
+    limited_count_array: values of count greater than 40,000 will be replaced with np.nan
+    '''
+    limited_count_array = count_array.astype("float")
+    limited_count_array[count_array > 40000] = np.nan
+    #print('actual',count_array, 'limited', limited_count_array)
+    return limited_count_array
+
 def exponential_from_p(t,p):
     L, M, N = 1.8354467816716038, 0.23986204637532926, 0.0980528855003108
     q = L*p**2+M*p+N
@@ -26,7 +41,7 @@ def find_c_t(c_0, rate, dt):
     c_t = c_0 + rate*dt
     return c_t
 
-def generate_up_the_ramp(c_0=0, rate=3000, t_max=10, dt=1):
+def generate_up_the_ramp(c_0, rate, t_max, dt):
     '''
     c_0 : Initial value
     t_max : Maximum time to continue this process
@@ -40,7 +55,7 @@ def generate_up_the_ramp(c_0=0, rate=3000, t_max=10, dt=1):
         up_the_ramp_values.append(c_t)
         c_0=c_t
         t=t+dt
-    return up_the_ramp_values
+    return np.array(up_the_ramp_values)
 
 def generate_decay_curve(count,time,dt,channel):
     '''
@@ -55,9 +70,9 @@ def generate_decay_curve(count,time,dt,channel):
     decay_curve: array of functional values of decay
     '''
     time_decay = np.arange(time, 30/dt ,dt)
-    #print('count_1',count)
+    ## print('count_1',count)
     updated_p = interpolating_p(count, channel)
-    ##print(updated_p)
+    ### print(updated_p)
     decay_curve = (count) \
                 * ( exponential_from_p(time_decay-time_decay[0], updated_p))
     return decay_curve
@@ -85,7 +100,6 @@ def generate_up_the_ramp_decay_added(c_0, rate, t_max, dt, channel):
         c_t = find_c_t(c_0,  rate, dt)
         updated_p = interpolating_p(c_0, channel)
         updated_count = c_t + exponential_from_p(dt,updated_p) * c_t
-       # print(c_t,exponential_from_p(dt,updated_p) * c_t,updated_count)
         up_the_ramp_values.append(c_t)
         c_0 = updated_count
         t = t + dt
@@ -93,8 +107,7 @@ def generate_up_the_ramp_decay_added(c_0, rate, t_max, dt, channel):
 
 def generate_simulation_each_instant_decay(c_0=0, rate=3000,t_max=10, dt=1, channel=0):
     rate = rate * dt
-    t_max = 10 / dt
-    
+    t_max = t_max / dt
     up_the_ramp = generate_up_the_ramp_decay_added(c_0,  rate,  t_max,  dt, channel)
     updated_count = up_the_ramp[-1]
     updated_p = interpolating_p(updated_count, channel)
@@ -102,8 +115,8 @@ def generate_simulation_each_instant_decay(c_0=0, rate=3000,t_max=10, dt=1, chan
     time_decay = np.arange(t_max, 30/dt ,dt)
     decay_curve = updated_count \
         + (updated_count) \
-        * ( exponential_from_p(time_decay-time_decay[0], updated_p)) #Decau after closing of shutter
-    simulated_curve = np.hstack((up_the_ramp, decay_curve))
+        * ( exponential_from_p(time_decay-time_decay[0], updated_p)) #Decay after closing of shutter
+    simulated_curve = count_limit(np.hstack((up_the_ramp, decay_curve)))
     simulated_time = np.hstack((time_up_the_ramp, time_decay))
     return simulated_curve, simulated_time 
 
@@ -124,14 +137,14 @@ def decay_added_up_the_ramp(c_0, rate, t_max, dt, channel):
     t = 0
     while t<=t_max:
         c_t = find_c_t(c_0,rate,dt)
-        ##print('c_t',c_t)
+        ### print('c_t',c_t)
         exp_decay = generate_decay_curve(c_t, t, dt, channel)
         if t==0:
             old_decay = exp_decay
         else:
             old_decay = adding_old_new_decay(old_decay,exp_decay)
         updated_c = c_t + old_decay[0]
-        ##print(c_t,old_decay[0],updated_c)
+        ### print(c_t,old_decay[0],updated_c)
         up_the_ramp_values.append(updated_c)
         t +=dt
         c_0 = updated_c
@@ -152,12 +165,12 @@ def generate_simulation_previous_decay_sum(c_0=0, rate=3000, t_max=10, dt=1, cha
     simulation_time : time of simulation 
     '''
     rate = rate * dt
-    t_max = 10 / dt
-    ##print('c_o', c_0)
+    t_max = t_max / dt
+    ### print('c_o', c_0)
     up_the_ramp = decay_added_up_the_ramp(c_0,  rate,  t_max,  dt, channel)
     time_up_the_ramp = np.linspace(0,t_max,len(up_the_ramp))
     decay_curve = generate_decay_curve(up_the_ramp[-1],t_max,dt, channel) + up_the_ramp[-1]
     time_decay = np.arange(t_max,30/dt,dt)
-    simulated_curve = np.hstack((up_the_ramp, decay_curve))
+    simulated_curve = count_limit(np.hstack((up_the_ramp, decay_curve)))
     simulation_time = np.hstack((time_up_the_ramp, time_decay))
     return simulated_curve, simulation_time
